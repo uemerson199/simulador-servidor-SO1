@@ -13,44 +13,62 @@ public class ChatClient {
         sc = new Scanner(System.in);
     }
 
-    public void start() throws IOException {
+    public void start() throws IOException, InterruptedException {
         clientSocket = new ClientSocket(new Socket(SERVER_ADDRESS, ChatSever.PORT)) ;
         System.out.println("Cliente conectado ao servidor em : " + SERVER_ADDRESS + ": " + ChatSever.PORT);
         messageLoop();
     }
 
-    private void messageLoop() throws IOException {
-        // Caminho do arquivo que será lido
+    private void messageLoop() throws IOException, InterruptedException {
         String path = "C:\\temp\\in.txt";
 
-        // Bloco try-with-resources para garantir o fechamento do BufferedReader
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-            String line = br.readLine();
-            // Envia cada linha do arquivo como uma mensagem
-            while (line != null) {
-                System.out.println("Requisição enviada: " + line);
-                clientSocket.sendMsg(line);  // Envia a linha lida para o servidor
-                line = br.readLine();
+            StringBuilder requestBuilder = new StringBuilder();
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                if (line.trim().equals("---")) {
+                    // Quando encontrar o delimitador, processa a requisição
+                    if (requestBuilder.length() > 0) {
+                        String request = requestBuilder.toString().trim();
+                        System.out.println("Requisição enviada: " + request);
+                        clientSocket.sendMsg(request);
+                        requestBuilder.setLength(0); // Limpa o buffer
+                        // Adiciona um delay entre o envio de requisições
+                        Thread.sleep(1000); // 1000 ms = 1 segundo
+                    }
+                } else {
+                    // Adiciona linha à requisição atual
+                    requestBuilder.append(line).append("\n");
+                }
             }
-        } catch (IOException e) {
+
+
+            if (requestBuilder.length() > 0) {
+                String request = requestBuilder.toString().trim();
+                System.out.println("Requisição enviada: " + request);
+                clientSocket.sendMsg(request);
+                Thread.sleep(1000); // 1000 ms = 1 segundo
+            }
+
+        } catch (IOException | InterruptedException e) {
             System.out.println("Error: " + e.getMessage());
         }
 
-        // Loop para enviar mensagens digitadas pelo usuário
-        String msg;
-        do {
-            System.out.print("Digite uma mensagem (ou sair para finalizar): ");
-            msg = sc.nextLine();
-            sc.nextLine();
+
+        while (sc.hasNextLine()) {
+            String msg = sc.nextLine();
             clientSocket.sendMsg(msg);
-        } while(!msg.equalsIgnoreCase("sair"));
+            Thread.sleep(500);
+        }
     }
+
 
     public static void main(String[] args) {
         try {
             ChatClient client = new ChatClient();
             client.start();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             System.out.println("Erro ao iniciar cliente: " + e.getMessage());
         }
 

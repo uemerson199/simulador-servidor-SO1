@@ -4,13 +4,13 @@ import entities.ClientSocket;
 
 public class Request implements Comparable<Request> {
     private final ClientSocket clientSocket;
-    private final int estimatedTime; // Tempo estimado de processamento
-    private int priority;            // Prioridade para aging
+    private final int estimatedTime;
+    private int priority;
 
     public Request(ClientSocket clientSocket, int estimatedTime) {
         this.clientSocket = clientSocket;
         this.estimatedTime = estimatedTime;
-        this.priority = estimatedTime; // Inicialmente, prioridade é o tempo estimado
+        this.priority = estimatedTime;
     }
 
     public int getEstimatedTime() {
@@ -26,7 +26,7 @@ public class Request implements Comparable<Request> {
     }
 
     public void increasePriority() {
-        this.priority -= 1; // Diminui a prioridade ao longo do tempo para evitar starvation
+        this.priority -= 1;
     }
 
     @Override

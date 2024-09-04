@@ -47,6 +47,9 @@ public class ClientSocket {
         out.println(msg);
         return out.checkError();
     }
+    public BufferedReader getBufferedReader() {
+        return in;
+    }
 
 
 }

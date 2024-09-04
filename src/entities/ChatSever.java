@@ -5,7 +5,8 @@ import interfaces.Request;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,19 +15,19 @@ public class ChatSever {
     public static final int PORT = 4000;
     private ServerSocket serverSocket;
     private ChatServerGUI gui;
-    private PriorityQueue<Request> requestQueue;
+    private Queue<Request> requestQueue;
     private ExecutorService executorService;
 
     public ChatSever() {
         gui = new ChatServerGUI();
         gui.setVisible(true);
-        requestQueue = new PriorityQueue<>();
+        requestQueue = new LinkedList<>();
         executorService = Executors.newFixedThreadPool(10);
     }
 
     public void start() throws IOException {
         serverSocket = new ServerSocket(PORT);
-        gui.appendMessage("Servidor foi iniciado na porta: " + PORT);
+        gui.appendMessage("Servidor foi iniciado na porta: " + PORT, false);
         clientConnectionLoop();
     }
 
@@ -40,7 +41,8 @@ public class ChatSever {
                 requestQueue.notify();
             }
 
-            executorService.submit(() -> processRequests());
+
+            executorService.submit(this::processRequests);
         }
     }
 
@@ -58,12 +60,15 @@ public class ChatSever {
                 request = requestQueue.poll();
             }
 
-            for (Request req : requestQueue) {
-                req.increasePriority();
-            }
-
             ClientSocket clientSocket = request.getClientSocket();
             clientMessageLoop(clientSocket);
+
+
+            try {
+                Thread.sleep(1000); // 1000 ms = 1 segundo
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -73,21 +78,26 @@ public class ChatSever {
             while ((msg = clientSocket.getMessage()) != null) {
                 if ("sair".equalsIgnoreCase(msg))
                     return;
-                // Usa println para garantir a quebra de linha
-                System.out.println(String.format("Requisição recebida do cliente %s: %s", clientSocket.getRemoteSocketAddress(), msg));
+                String clientAddress = clientSocket.getRemoteSocketAddress().toString();
+                gui.appendRequest(clientAddress, msg);
+                System.out.println("Requisição recebida do cliente " + clientAddress + ": " + msg);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         } finally {
             clientSocket.close();
         }
     }
 
-
     public static void main(String[] args) {
         try {
             ChatSever server = new ChatSever();
             server.start();
         } catch (IOException e) {
-            System.out.println("Error ao iniciar o servidor: " + e.getMessage());
+            System.out.println("Erro ao iniciar o servidor: " + e.getMessage());
         }
 
         System.out.println("Servidor finalizado!");
