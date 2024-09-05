@@ -17,6 +17,7 @@ public class ChatSever {
     private ChatServerGUI gui;
     private Queue<Request> requestQueue;
     private ExecutorService executorService;
+    private final int quantum = 2;
 
     public ChatSever() {
         gui = new ChatServerGUI();
@@ -41,7 +42,6 @@ public class ChatSever {
                 requestQueue.notify();
             }
 
-
             executorService.submit(this::processRequests);
         }
     }
@@ -61,34 +61,42 @@ public class ChatSever {
             }
 
             ClientSocket clientSocket = request.getClientSocket();
-            clientMessageLoop(clientSocket);
+            if (request.getEstimatedTime() > 0) {
+                int processingTime = Math.min(request.getEstimatedTime(), quantum);
+                processRequestForTime(clientSocket, processingTime);
 
+                request.reduceEstimatedTime(processingTime);
+
+                if (request.getEstimatedTime() > 0) {
+                    synchronized (requestQueue) {
+                        requestQueue.offer(request);
+                    }
+                }
+            }
 
             try {
-                Thread.sleep(1000); // 1000 ms = 1 segundo
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    public void clientMessageLoop(ClientSocket clientSocket) {
-        String msg;
+
+    private void processRequestForTime(ClientSocket clientSocket, int timeToProcess) {
+        long endTime = System.currentTimeMillis() + timeToProcess * 1000L;
         try {
-            while ((msg = clientSocket.getMessage()) != null) {
-                if ("sair".equalsIgnoreCase(msg))
-                    return;
+            while (System.currentTimeMillis() < endTime) {
+                String msg = clientSocket.getMessage();
+                if (msg == null) break;
+                if ("sair".equalsIgnoreCase(msg)) return;
                 String clientAddress = clientSocket.getRemoteSocketAddress().toString();
                 gui.appendRequest(clientAddress, msg);
                 System.out.println("Requisição recebida do cliente " + clientAddress + ": " + msg);
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                Thread.sleep(500);
             }
-        } finally {
-            clientSocket.close();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 

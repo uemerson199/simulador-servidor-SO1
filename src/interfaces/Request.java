@@ -4,7 +4,7 @@ import entities.ClientSocket;
 
 public class Request implements Comparable<Request> {
     private final ClientSocket clientSocket;
-    private final int estimatedTime;
+    private int estimatedTime;
     private int priority;
 
     public Request(ClientSocket clientSocket, int estimatedTime) {
@@ -13,8 +13,13 @@ public class Request implements Comparable<Request> {
         this.priority = estimatedTime;
     }
 
+
     public int getEstimatedTime() {
         return estimatedTime;
+    }
+
+    public void reduceEstimatedTime(int time) {
+        this.estimatedTime -= time;
     }
 
     public int getPriority() {
@@ -23,10 +28,6 @@ public class Request implements Comparable<Request> {
 
     public ClientSocket getClientSocket() {
         return clientSocket;
-    }
-
-    public void increasePriority() {
-        this.priority -= 1;
     }
 
     @Override

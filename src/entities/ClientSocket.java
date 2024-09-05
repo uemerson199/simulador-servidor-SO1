@@ -1,9 +1,6 @@
 package entities;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketAddress;
 
@@ -12,6 +9,7 @@ public class ClientSocket {
     private final Socket socket;
     private final BufferedReader in;
     private final PrintWriter out;
+    private boolean closed = false;
 
     public ClientSocket(Socket socket) throws IOException {
         this.socket = socket;
@@ -29,14 +27,15 @@ public class ClientSocket {
             in.close();
             out.close();
             socket.close();
+            closed = true;
         } catch (IOException e) {
             System.out.println("Erro ao fechar socket: " + e.getMessage());
         }
-
     }
 
     public String getMessage() {
         try {
+            if (closed) return null;
             return in.readLine();
         } catch (IOException e) {
             return null;
@@ -44,12 +43,12 @@ public class ClientSocket {
     }
 
     public boolean sendMsg(String msg) {
+        if (closed) return false;
         out.println(msg);
         return out.checkError();
     }
-    public BufferedReader getBufferedReader() {
-        return in;
+
+    public boolean isClosed() {
+        return closed;
     }
-
-
 }
