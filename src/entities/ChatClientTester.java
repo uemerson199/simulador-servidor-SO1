@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 
 public class ChatClientTester {
     public static void main(String[] args) {
-        int numberOfClients = 5;
+        int numberOfClients = 50;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfClients);
 
         for (int i = 0; i < numberOfClients; i++) {

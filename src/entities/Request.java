@@ -1,6 +1,4 @@
-package interfaces;
-
-import entities.ClientSocket;
+package entities;
 
 public class Request implements Comparable<Request> {
     private final ClientSocket clientSocket;

@@ -1,6 +1,6 @@
 package entities;
 
-import interfaces.Request;
+import interfaces.ChatServerGUI;
 
 import java.io.IOException;
 import java.net.ServerSocket;

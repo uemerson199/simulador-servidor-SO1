@@ -28,34 +28,30 @@ public class ChatClient {
             String line;
 
             while ((line = br.readLine()) != null) {
-                line = line.trim(); // Remove espaços em branco ao redor da linha
+                line = line.trim();
 
                 if (line.isEmpty()) {
-                    continue; // Ignora linhas vazias
+                    continue;
                 }
 
                 if (line.equals("---")) {
-                    // Quando encontrar o delimitador, processa a requisição
                     if (requestBuilder.length() > 0) {
                         String request = requestBuilder.toString().trim();
-                        if (!request.isEmpty()) { // Verifica se a requisição não está vazia
+                        if (!request.isEmpty()) {
                             System.out.println("Requisição enviada: " + request);
                             clientSocket.sendMsg(request);
                         }
-                        requestBuilder.setLength(0); // Limpa o buffer
-                        // Adiciona um delay entre o envio de requisições
-                        Thread.sleep(1000); // 1000 ms = 1 segundo
+                        requestBuilder.setLength(0);
+                        Thread.sleep(1000);
                     }
                 } else {
-                    // Adiciona linha à requisição atual
                     requestBuilder.append(line).append("\n");
                 }
             }
 
-            // Envia a última requisição se existir
             if (requestBuilder.length() > 0) {
                 String request = requestBuilder.toString().trim();
-                if (!request.isEmpty()) { // Verifica se a requisição não está vazia
+                if (!request.isEmpty()) {
                     System.out.println("Requisição enviada: " + request);
                     clientSocket.sendMsg(request);
                 }
@@ -65,14 +61,13 @@ public class ChatClient {
             System.out.println("Error: " + e.getMessage());
         }
 
-        // Envia mensagens do console até que o usuário digite "sair"
         while (sc.hasNextLine()) {
             String msg = sc.nextLine().trim();
             if ("sair".equalsIgnoreCase(msg)) {
                 clientSocket.sendMsg(msg);
                 break;
             }
-            if (!msg.isEmpty()) { // Verifica se a mensagem não está vazia
+            if (!msg.isEmpty()) {
                 clientSocket.sendMsg(msg);
             }
             Thread.sleep(500);

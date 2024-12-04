@@ -1,4 +1,4 @@
-package entities;
+package interfaces;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +14,7 @@ public class ChatServerGUI extends JFrame {
 
         chatArea = new JTextArea();
         chatArea.setEditable(false);
-        chatArea.setFont(new Font("Courier New", Font.PLAIN, 12));
+        chatArea.setFont(new Font("Courier New", Font.PLAIN, 16));
         JScrollPane scrollPane = new JScrollPane(chatArea);
 
         add(scrollPane, BorderLayout.CENTER);
